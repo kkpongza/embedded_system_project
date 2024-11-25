@@ -1,321 +1,128 @@
-// #define BLYNK_TEMPLATE_ID "TMPL6if3X-9yu" 
-// #define BLYNK_TEMPLATE_NAME "Quickstart Template" 
-// #define BLYNK_AUTH_TOKEN "kLJ8g3mNLJxJHHnqhXdLFbpL_bpDPMiB" 
-
-// /* Comment this out to disable prints and save space */
-// #define BLYNK_PRINT Serial
-
-// #include <WiFi.h>
-// #include <WiFiClient.h>
-// #include <LiquidCrystal_I2C.h>
-// #include <BlynkSimpleEsp32.h>
-
-
-// // Your WiFi credentials
-// char ssid[] = "Kiang (2)";
-// char pass[] = "kiangggg";
-
-// BlynkTimer timer;
-
-// #define LED_PIN 2 // Define LED pin
-// #define SOUND_SENSOR_PIN 34 // Sound sensor connected to GPIO 34 (Analog Input)
-
-// LiquidCrystal_I2C lcd(0x27, 16, 2); // 16 columns, 2 rows
-// const int soundThreshold = 3200;
-
-// void updateLCD(const char* message) {
-
-//   lcd.clear();
-//   lcd.setCursor(0, 0); // Set cursor to the first row
-//   lcd.print(message);
-
-//   // Blynk.virtualWrite(V1, "clr");        // Clear LCD screen
-//   Blynk.virtualWrite(V1, message); // Display the message on the first row
-// }
-
-// void checkSound() {
-//   float soundLevel = analogRead(SOUND_SENSOR_PIN); 
-
-//   float percent = (soundLevel / 4095) * 100;
-//   Blynk.virtualWrite(V3, percent); // Send the decibel value to Virtual Pin V3
-
-//   if (soundLevel > soundThreshold) { // Adjust `soundThreshold` for dB
-//     updateLCD("Sound Detected");
-//     digitalWrite(LED_PIN, HIGH); // Turn on the LED to indicate detection
-//   } else {
-//     updateLCD("No Sound");
-//     digitalWrite(LED_PIN, LOW); // Turn off the LED
-//   }
-// }
-
-
-// // This function is called every time the Virtual Pin 0 state changes
-// BLYNK_WRITE(V0)
-// {
-//   // Set incoming value from pin V0 to a variable
-//   int value = param.asInt();
-
-//   // Update LED state based on the value from V0
-//   digitalWrite(LED_PIN, value);
-
-//   // Optionally, send the value to another Virtual Pin (V1) for tracking
-//   if (value == 1) {
-//     updateLCD("LED ON");
-//   } else {
-//     updateLCD("LED OFF");
-//   }
-// }
-
-// // This function sends Arduino's uptime every second to Virtual Pin 2
-// // void myTimerEvent()
-// // {
-// //   // You can send any value at any time.
-// //   // Please don't send more than 10 values per second.
-// //   Blynk.virtualWrite(V2, millis() / 1000);
-// // }
-
-// void setup()
-// {
-//   Wire.begin(); // Initialize I2C
-//   // Debug console
-//   Serial.begin(115200);
-
-//   // Set LED pin as output
-//   pinMode(LED_PIN, OUTPUT);
-//   digitalWrite(LED_PIN, LOW); // Turn off LED initially
-
-//   lcd.init();
-//   lcd.backlight(); // Turn on the LCD backlight
-
-//   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-//   // You can also specify server:
-//   //Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, "blynk.cloud", 80);
-//   //Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, IPAddress(192,168,1,100), 8080);
-
-//   // Setup a function to be called every second
-//   // timer.setInterval(1000L, myTimerEvent);
-//   updateLCD("Waiting for input");
-
-//   timer.setInterval(500L, checkSound);
-// }
-
-// void loop()
-// {
-//   Blynk.run();
-//   timer.run();
-//   // You can inject your own code or combine it with other sketches.
-//   // Check other examples on how to communicate with Blynk. Remember
-//   // to avoid delay() function!
-// }
-
-// #include <Wire.h>
-// #include <LiquidCrystal_I2C.h>
-// #include <WiFi.h>
-
-// #define LED_PIN 2          // Define LED pin
-// #define SOUND_SENSOR_PIN 34 // Sound sensor connected to GPIO 34 (Analog Input)
-// #define MOTION_SENSOR_PIN 19
-// #define ALARM_SENSOR_PIN 18
-
-// LiquidCrystal_I2C lcd(0x27, 16, 2); // 16 columns, 2 rows
-// const int soundThreshold = 3200;    // Threshold for detecting sound
-// bool alarmTriggered = false;
-
-// void updateLCD(const char* message) {
-//   lcd.clear();
-//   lcd.setCursor(0, 0); // Set cursor to the first row
-//   lcd.print(message);
-// }
-
-// void checkMotion() {
-//   int motionState = digitalRead(MOTION_SENSOR_PIN); // Read the state of the motion sensor
-
-//   // Print the motion sensor state to the Serial Monitor
-//   Serial.print("Motion Sensor State: ");
-//   Serial.println(motionState);
-
-//   // If motion is detected, trigger the alarm and update the LCD
-//   if (motionState == 1) {
-//     updateLCD("Motion Detected");
-//     // digitalWrite(ALARM_SENSOR_PIN, HIGH); // Trigger alarm
-//     alarmTriggered = true;
-//   } else {
-//     // digitalWrite(ALARM_SENSOR_PIN, LOW);  // Turn off alarm
-//     alarmTriggered = false;
-//   }
-// }
-
-// void checkSound() {
-//   float soundLevel = analogRead(SOUND_SENSOR_PIN); // Read the analog value from the sound sensor
-
-//   // Calculate the sound level as a percentage of the max ADC value
-//   float percent = (soundLevel / 4095) * 100;
-
-//   // Print the sound level and percentage to the Serial Monitor
-//   Serial.print("Sound Level (ADC): ");
-//   Serial.print(soundLevel);
-//   Serial.print(" -> Percent: ");
-//   Serial.println(percent);
-
-//   // Update LCD and LED based on sound level
-//   if (soundLevel > soundThreshold) {
-//     updateLCD("Sound Detected");
-//     digitalWrite(LED_PIN, HIGH); // Turn on the LED
-//     // digitalWrite(ALARM_SENSOR_PIN, HIGH);
-//     alarmTriggered = true;
-//   } else {
-//     updateLCD("No Sound");
-//     digitalWrite(LED_PIN, LOW); // Turn off the LED
-//     // digitalWrite(ALARM_SENSOR_PIN, LOW);
-//     alarmTriggered = false;
-//   }
-// }
-
-// // This function is called when a button press changes the LED state
-// void handleButtonPress(bool isLedOn) {
-//   if (isLedOn) {
-//     digitalWrite(LED_PIN, HIGH);
-//     updateLCD("LED ON");
-//   } else {
-//     digitalWrite(LED_PIN, LOW);
-//     updateLCD("LED OFF");
-//   }
-// }
-
-// void controlAlarm() {
-//   if (alarmTriggered) {
-//     digitalWrite(ALARM_SENSOR_PIN, HIGH); // Trigger alarm
-//     alarmTriggered = false; // Reset the flag after triggering
-//   } else {
-//     digitalWrite(ALARM_SENSOR_PIN, LOW);  // Turn off alarm
-//   }
-// }
-
-// void setup() {
-//   Wire.begin();           // Initialize I2C
-//   Serial.begin(115200);   // Debug console
-
-//   // Set up LED pin
-//   pinMode(ALARM_SENSOR_PIN, OUTPUT);
-//   pinMode(MOTION_SENSOR_PIN, INPUT);
-//   digitalWrite(ALARM_SENSOR_PIN, LOW);
-//   pinMode(LED_PIN, OUTPUT);
-//   digitalWrite(LED_PIN, LOW); // Turn off the LED initially
-
-//   // Initialize the LCD
-//   lcd.init();
-//   lcd.backlight(); // Turn on the LCD backlight
-//   updateLCD("Waiting for input");
-
-//   // Print initialization message
-//   Serial.println("Setup complete. Waiting for sound...");
-// }
-
-// void loop() {
-//   checkSound(); // Continuously check for sound
-//   checkMotion();
-//   controlAlarm();
-//   delay(500);   // Add a delay to avoid overwhelming the loop
-// }
-
-
+#include <Arduino.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
 
-#define LED_PIN 2           // Define LED pin
-#define SOUND_SENSOR_PIN 34 // Sound sensor connected to GPIO 34 (Analog Input)
+// #define LED_PIN 2
+#define SOUND_SENSOR_PIN 34
 #define MOTION_SENSOR_PIN 19
+#define VIBRATE_SENSOR_PIN 2
+#define INFRARED_SENSOR_PIN 23
 #define ALARM_SENSOR_PIN 18
 
-LiquidCrystal_I2C lcd(0x27, 16, 2); // 16 columns, 2 rows
-const int soundThreshold = 3200;    // Threshold for detecting sound
-bool motionDetected = false;        // Track motion detection
-bool soundDetected = false;         // Track sound detection
+#define BLYNK_TEMPLATE_ID "TMPL6Op-cq5FV" 
+#define BLYNK_TEMPLATE_NAME "Quickstart Template" 
+#define BLYNK_AUTH_TOKEN "KOhYdpV6Oi2NVrq-4XcHpXR7KUFwPqr_" 
 
-void updateLCD(const char* message) {
+/* Comment this out to disable prints and save space */
+#define BLYNK_PRINT Serial
+
+// Your WiFi credentials
+char ssid[] = "Kiang (2)";
+char pass[] = "kiangggg";
+
+BlynkTimer timer;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // 16 columns, 2 rows
+const int soundThreshold = 3500;    // Threshold for detecting sound
+bool motionDetected = false;
+bool soundDetected = false;
+bool vibrateDetected = false;
+bool infraredDetected = false;
+
+void updateLCD() {
   lcd.clear();
-  lcd.setCursor(0, 0); // Set cursor to the first row
+  String message = "";
+
+  if (motionDetected) message += "Motion ";
+  if (soundDetected) message += "Sound ";
+  if (vibrateDetected) message += "Vibrate ";
+  if (infraredDetected) message += "Infrared ";
+
+  if (message.length() == 0) {
+    message = "Waiting for input";
+  }
+
+  lcd.setCursor(0, 0);
   lcd.print(message);
+  Blynk.virtualWrite(V0, message);
 }
 
 void checkMotion() {
-  int motionState = digitalRead(MOTION_SENSOR_PIN); // Read the state of the motion sensor
-
-  // Print the motion sensor state to the Serial Monitor
-  Serial.print("Motion Sensor State: ");
+  int motionState = digitalRead(MOTION_SENSOR_PIN);
+  Serial.print("Motion Sensor: ");
   Serial.println(motionState);
-
-  // Update motion detection status
-  if (motionState == 1) {
-    motionDetected = true;  // Motion detected
-    updateLCD("Motion Detected");
-  } else {
-    motionDetected = false; // No motion
-    updateLCD("Wating for input");
-  }
+  motionDetected = (motionState == 1);
+  Blynk.virtualWrite(V2, motionDetected);
 }
 
 void checkSound() {
-  float soundLevel = analogRead(SOUND_SENSOR_PIN); // Read the analog value from the sound sensor
-
-  // Calculate the sound level as a percentage of the max ADC value
+  float soundLevel = analogRead(SOUND_SENSOR_PIN);
   float percent = (soundLevel / 4095) * 100;
-
-  // Print the sound level and percentage to the Serial Monitor
-  Serial.print("Sound Level (ADC): ");
-  Serial.print(soundLevel);
-  Serial.print(" -> Percent: ");
+  Blynk.virtualWrite(V1, soundLevel);
+  Serial.print("Sound Level: ");
   Serial.println(percent);
+  soundDetected = (soundLevel > soundThreshold);
+}
 
-  // Update sound detection status
-  if (soundLevel > soundThreshold) {
-    soundDetected = true;  // Sound detected
-    updateLCD("Sound Detected");
-    digitalWrite(LED_PIN, HIGH); // Turn on the LED
-  } else {
-    soundDetected = false; // No sound
-    updateLCD("Wating for input");
-    digitalWrite(LED_PIN, LOW); // Turn off the LED
-  }
+void checkVibrate() {
+  int vibrateState = digitalRead(VIBRATE_SENSOR_PIN);
+  Serial.print("Vibrate Sensor: ");
+  Serial.println(vibrateState);
+  vibrateDetected = (vibrateState == 1);
+  Blynk.virtualWrite(V3, vibrateDetected);
+}
+
+void checkInfrared() {
+  int infraredState = digitalRead(INFRARED_SENSOR_PIN);
+  Serial.print("Infrared Sensor: ");
+  Serial.println(infraredState);
+  infraredDetected = !(infraredState == 1);
+  Blynk.virtualWrite(V4, infraredDetected);
 }
 
 void controlAlarm() {
-  // Turn on the alarm if either motion or sound is detected
-  if (motionDetected || soundDetected) {
-    digitalWrite(ALARM_SENSOR_PIN, HIGH); // Trigger alarm
-    Serial.println("Alarm Triggered!");
+  if (motionDetected || soundDetected  || infraredDetected || vibrateDetected) {
+    digitalWrite(ALARM_SENSOR_PIN, HIGH);
+    Blynk.virtualWrite(V5, "Alarm On");
+    Serial.println("Alarm On");
   } else {
-    digitalWrite(ALARM_SENSOR_PIN, LOW);  // Turn off alarm
-    Serial.println("Alarm Off.");
+    digitalWrite(ALARM_SENSOR_PIN, LOW);
+    Blynk.virtualWrite(V5, "Alarm Off");
+    Serial.println("Alarm Off");
   }
 }
 
-void setup() {
-  Wire.begin();           // Initialize I2C
-  Serial.begin(115200);   // Debug console
+void setup()
+{
+ Wire.begin();
+  Serial.begin(115200);
+  lcd.init();
+  lcd.backlight();
 
-  // Set up pins
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
   pinMode(ALARM_SENSOR_PIN, OUTPUT);
   pinMode(MOTION_SENSOR_PIN, INPUT);
-  pinMode(SOUND_SENSOR_PIN, INPUT)
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(ALARM_SENSOR_PIN, LOW); // Ensure alarm is off initially
-  digitalWrite(LED_PIN, LOW);          // Ensure LED is off initially
+  pinMode(SOUND_SENSOR_PIN, INPUT);
+  pinMode(VIBRATE_SENSOR_PIN, INPUT);
+  pinMode(INFRARED_SENSOR_PIN, INPUT);
+  digitalWrite(ALARM_SENSOR_PIN, LOW);
 
-  // Initialize the LCD
-  lcd.init();
-  lcd.backlight(); // Turn on the LCD backlight
-  updateLCD("Waiting for input");
+  timer.setInterval(500L, checkSound);
+  timer.setInterval(600L, checkMotion);
+  timer.setInterval(700L, checkVibrate);
+  timer.setInterval(900L, checkInfrared);
+  timer.setInterval(700L, updateLCD);
+  timer.setInterval(600L, controlAlarm);
 
-  // Print initialization message
-  Serial.println("Setup complete. Waiting for sound and motion...");
+  Serial.println("Setup complete. Awaiting inputs...");
 }
 
-void loop() {
-  checkSound();  // Continuously check for sound
-  // checkMotion(); // Continuously check for motion
-  controlAlarm(); // Control the alarm based on detections
-  delay(500);     // Add a delay to avoid overwhelming the loop
+void loop()
+{
+  Blynk.run();
+  timer.run();
 }
-
