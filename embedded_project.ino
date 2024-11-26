@@ -1,27 +1,40 @@
+// Define Blynk Template ID and Name before including Blynk headers
+#define BLYNK_TEMPLATE_ID "TMPL6Op-cq5FV" 
+#define BLYNK_TEMPLATE_NAME "Quickstart Template" 
+#define BLYNK_AUTH_TOKEN "KOhYdpV6Oi2NVrq-4XcHpXR7KUFwPqr_" 
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
+#include <ESP_Mail_Client.h>
 
-// #define LED_PIN 2
+// Define sensor pins
 #define SOUND_SENSOR_PIN 34
 #define MOTION_SENSOR_PIN 19
 #define VIBRATE_SENSOR_PIN 2
 #define INFRARED_SENSOR_PIN 23
 #define ALARM_SENSOR_PIN 18
 
-#define BLYNK_TEMPLATE_ID "TMPL6Op-cq5FV" 
-#define BLYNK_TEMPLATE_NAME "Quickstart Template" 
-#define BLYNK_AUTH_TOKEN "KOhYdpV6Oi2NVrq-4XcHpXR7KUFwPqr_" 
-
 /* Comment this out to disable prints and save space */
 #define BLYNK_PRINT Serial
 
+// SMTP Configuration
+#define SMTP_HOST "smtp.gmail.com"
+#define SMTP_PORT 465 // Typically 465 for SSL or 587 for TLS
+#define AUTHOR_EMAIL "topten.watthana@gmail.com" // **Ensure this is secure**
+#define AUTHOR_PASSWORD "gydy zgqp bgjb pkjk"          // **Ensure this is secure**
+
+// Email Details
+#define RECIPIENT_EMAIL "thornthantham@gmail.com"
+#define EMAIL_SUBJECT "Alarm Triggered Notification"
+#define EMAIL_MESSAGE "An alarm has been triggered by your security system."
+
 // Your WiFi credentials
-char ssid[] = "Kiang (2)";
-char pass[] = "kiangggg";
+char ssid[] = "Topten_2.4G";
+char pass[] = "0945710162";
 
 BlynkTimer timer;
 
@@ -31,6 +44,50 @@ bool motionDetected = false;
 bool soundDetected = false;
 bool vibrateDetected = false;
 bool infraredDetected = false;
+bool alarmActive = false;
+
+SMTPSession smtp;
+
+// Variables to handle email timing
+unsigned long lastEmailSentTime = -300000;
+bool alarmPreviouslyActive = false;
+const unsigned long emailInterval = 300000; // 5 minutes in milliseconds
+
+void sendEmailNotification() {
+  smtp.debug(1);
+
+  ESP_Mail_Session session;
+  session.server.host_name = SMTP_HOST;
+  session.server.port = SMTP_PORT;
+  session.login.email = AUTHOR_EMAIL;
+  session.login.password = AUTHOR_PASSWORD;
+
+  SMTP_Message message;
+  message.sender.name = "Alarm System";
+  message.sender.email = AUTHOR_EMAIL;
+  message.subject = EMAIL_SUBJECT;
+  message.text.content = EMAIL_MESSAGE;
+  message.addRecipient("Recipient Name", RECIPIENT_EMAIL);
+
+  if (!smtp.connect(&session)) {
+    Serial.println("Could not connect to SMTP server.");
+    return;
+  }
+
+  if (!MailClient.sendMail(&smtp, &message)) {
+    Serial.println("Error sending Email, ");
+    Serial.println(smtp.errorCode());
+  } else {
+    Serial.println("Email sent successfully.");
+  }
+
+  smtp.closeSession();
+}
+
+void emailTask(void * parameter) {
+  sendEmailNotification();
+  vTaskDelete(NULL); 
+}
 
 void updateLCD() {
   lcd.clear();
@@ -79,25 +136,40 @@ void checkInfrared() {
   int infraredState = digitalRead(INFRARED_SENSOR_PIN);
   Serial.print("Infrared Sensor: ");
   Serial.println(infraredState);
-  infraredDetected = !(infraredState == 1);
+  infraredDetected = !(infraredState == 1); // Assuming active LOW
   Blynk.virtualWrite(V4, infraredDetected);
 }
 
 void controlAlarm() {
-  if (motionDetected || soundDetected  || infraredDetected || vibrateDetected) {
+  
+  alarmActive = motionDetected || soundDetected || vibrateDetected || infraredDetected;
+
+
+  if (alarmActive) {
     digitalWrite(ALARM_SENSOR_PIN, HIGH);
     Blynk.virtualWrite(V5, "Alarm On");
+
+    unsigned long currentTime = millis();
+
+      // Check if 5 minutes have passed since the last email
+    if (currentTime - lastEmailSentTime >= emailInterval) {
+      // Send another email
+      xTaskCreate(emailTask, "Email Task", 8192, NULL, 1, NULL);        
+      lastEmailSentTime = currentTime;
+    }
+
     Serial.println("Alarm On");
+
   } else {
     digitalWrite(ALARM_SENSOR_PIN, LOW);
     Blynk.virtualWrite(V5, "Alarm Off");
     Serial.println("Alarm Off");
   }
+
 }
 
-void setup()
-{
- Wire.begin();
+void setup() {
+  Wire.begin();
   Serial.begin(115200);
   lcd.init();
   lcd.backlight();
@@ -114,15 +186,14 @@ void setup()
   timer.setInterval(500L, checkSound);
   timer.setInterval(600L, checkMotion);
   timer.setInterval(700L, checkVibrate);
-  timer.setInterval(900L, checkInfrared);
-  timer.setInterval(700L, updateLCD);
-  timer.setInterval(600L, controlAlarm);
+  timer.setInterval(1000L, checkInfrared);
+  timer.setInterval(500L, updateLCD);
+  timer.setInterval(300L, controlAlarm);
 
   Serial.println("Setup complete. Awaiting inputs...");
 }
 
-void loop()
-{
+void loop() {
   Blynk.run();
   timer.run();
 }
